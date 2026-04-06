@@ -56,7 +56,7 @@ M.config = {
       local tmpfile = '/tmp/tig_callback'
       local file = io.open(tmpfile, 'r')
       if file == nil then
-        vim.api.nvim_redraw()
+        vim.cmd("redr")
       else
         local content = file:read('a')
         io.close(file)
