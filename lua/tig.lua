@@ -49,7 +49,7 @@ M.config = {
   editor = {
     -- editor path
     -- @type: string
-    path = pwd_parent()..'script/callback_script.sh',
+    path = pwd_parent() .. 'script/callback_script.sh',
     -- Script to call editor
     -- @type function
     script = function()
@@ -71,14 +71,12 @@ M.setup = function(overrides)
   M.config = vim.tbl_deep_extend("force", M.config, overrides or {})
 
   if M.config.command.enable then
-    vim.api.nvim_create_user_command('Tigui',require('tig').open,{})
+    vim.api.nvim_create_user_command('Tigui', require('tig').open, {})
   end
 end
 
 M.open = function()
-  if M.state.is_open then
-    return
-  end
+  if M.state.is_open then return end
 
   -- tig
   assert(vim.fn.executable(M.config.binary) == 1, M.config.binary .. " not a executable")
