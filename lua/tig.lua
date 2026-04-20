@@ -80,12 +80,15 @@ M.open = function()
     return
   end
 
+  -- tig
   assert(vim.fn.executable(M.config.binary) == 1, M.config.binary .. " not a executable")
+  local cmd = M.config.binary
+  local envs = vim.tbl_deep_extend('force', M.config.envs, { GIT_EDITOR = M.config.editor.path })
+  local args = M.config.args
 
-  local bufnr = vim.api.nvim_create_buf(false, true)
-
-  local width = vim.api.nvim_get_option("columns")
-  local height = vim.api.nvim_get_option("lines")
+  -- floating window options
+  local width = vim.api.nvim_get_option_value("columns", {})
+  local height = vim.api.nvim_get_option_value("lines", {})
   local win_height = math.ceil(height * (M.config.window.options.height / 100))
   local win_width = math.ceil(width * (M.config.window.options.width / 100))
   local row = math.ceil((height - win_height) / 2)
@@ -102,17 +105,18 @@ M.open = function()
     noautocmd = true,
   }
 
+  -- create window
+  local bufnr = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_open_win(bufnr, true, window_options)
 
-  vim.fn.termopen( table.concat(vim.tbl_flatten({ 'GIT_EDITOR='..M.config.editor.path, M.config.envs, M.config.binary, M.config.args }), " " ), {
-    on_exit = function()
-      -- vim.api.nvim_win_close(winr, true)
-      -- vim.cmd([[silent! :q]])
-      vim.api.nvim_buf_delete(bufnr, { force = true })
-      M.state.is_open = false
-      M.config.editor.script()
-    end,
-  })
+  -- execute
+  local on_exit_func = function(_, _)
+    vim.api.nvim_buf_delete(bufnr, { force = true })
+    M.state.is_open = false
+    M.config.editor.script()
+  end
+
+  vim.fn.jobstart(cmd, { term = true, env = envs, arg = args, on_exit = on_exit_func })
   vim.cmd.startinsert()
   M.state.is_open = true
 end
